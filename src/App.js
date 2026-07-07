@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from './config/firebase';
 import { ref, onValue, set, update } from 'firebase/database';
-import { Eye, Shield, Info, Clock, Camera, Activity, AlertTriangle, BarChart2, Trash2, Download, RefreshCw, Bell, Radio, Power, PowerOff } from 'lucide-react';
+import { Eye, Shield, Info, Clock, Camera, AlertTriangle, BarChart2, Trash2, Download, RefreshCw, Bell, Radio, Power, PowerOff } from 'lucide-react';
 
 // Import Library Grafik
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 // Import Komponen UI
 import Navbar from './components/Navbar';
-import Card from './components/Card';
-import Status from './components/Status';
 import AlertServiceCard from './components/AlertServiceCard';
 import ControlPanel from './components/ControlPanel';
 import DangerAlert from './components/DangerAlert';
@@ -74,7 +72,6 @@ function App() {
   // STATE BARU: Deteksi Ukuran Layar Otomatis untuk Optimalisasi Mobile UI
   const [isMobile, setIsMobile] = useState(false);
 
-  const dataInput = { jarak: 0, status: "AMAN" }; // Ditambahkan penampung logika internal
   const [data, setData] = useState({ jarak: 0, status: "AMAN" });
   const [statusMata, setStatusMata] = useState("MEMUAT...");
   const [grafikData, setGrafikData] = useState([]);
@@ -85,9 +82,11 @@ function App() {
 
   // STATISTIK SESI DUDUK
   const [totalPelanggaran, setTotalPelanggaran] = useState(0);
-  const [totalDataMasuk, setTotalDataMasuk] = useState(0);
-  const [jumlahSemuaJarak, setJumlahSemuaJarak] = useState(0);
   const [rataRataJarak, setRataRataJarak] = useState(0);
+
+  // REFERENSI VARIABEL LOKAL UNTUK MENCEGAH RE-RENDER WARNING SAAT PERHITUNGAN REALTIME
+  const totalDataMasukRef = useRef(0);
+  const jumlahSemuaJarakRef = useRef(0);
 
   // STATE RIWAYAT DATA LOG TABEL
   const [riwayatData, setRiwayatData] = useState([]);
@@ -232,8 +231,8 @@ function App() {
   useEffect(() => {
     if (!isServiceActive) {
       setTotalPelanggaran(0);
-      setTotalDataMasuk(0);
-      setJumlahSemuaJarak(0);
+      totalDataMasukRef.current = 0;
+      jumlahSemuaJarakRef.current = 0;
       setRataRataJarak(0);
       setRiwayatData([]); 
       setRiwayatNotifikasi([]); 
@@ -265,15 +264,10 @@ function App() {
         if (isServiceActive && currentJarak > 0) {
           if (currentJarak < 90) {
             
-            setTotalDataMasuk(prev => {
-              const newCount = prev + 1;
-              setJumlahSemuaJarak(prevSum => {
-                const newSum = prevSum + currentJarak;
-                setRataRataJarak(newSum / newCount);
-                return newSum;
-              });
-              return newCount;
-            });
+            // Kalkulasi real-time tanpa memicu warning un-used state di server produksi
+            totalDataMasukRef.current += 1;
+            jumlahSemuaJarakRef.current += currentJarak;
+            setRataRataJarak(jumlahSemuaJarakRef.current / totalDataMasukRef.current);
 
             const isCurrentlyDanger = currentJarak < 50;
             if (isCurrentlyDanger) {
