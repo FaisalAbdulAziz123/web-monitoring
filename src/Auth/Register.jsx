@@ -6,7 +6,7 @@ import { UserPlus, Eye, EyeOff, Lock, Mail, User, Camera, RefreshCw, Loader2, Ar
 // CONFIG HOST API DINAMIS (KUNCI SINKRONISASI MOBILE NGROK)
 // ====================================================================
 // ⚠️ LANGKAH WAJIB: Ganti URL di bawah ini dengan URL acak terbaru yang muncul di terminal ngrok kamu!
-const BASE_URL_SERVER_AI = "  https://ec32-103-180-198-13.ngrok-free.app";
+const BASE_URL_SERVER_AI = " https://e557-114-5-208-106.ngrok-free.app";
 
 export default function Register({ setAuthPage }) {
   // State untuk manajemen langkah/step halaman (1 = Isi Form, 2 = Scan Face ID)
